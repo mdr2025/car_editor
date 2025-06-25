@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\JWTGuard;
 
 class AuthController extends Controller
 {
@@ -22,15 +23,15 @@ class AuthController extends Controller
     {
         // تم التحقق من البيانات تلقائياً بواسطة Form Request
         $user = User::create([
-            'full_name' => $request->fullname,
-            'user_name' => $request->username,
+            'full_name' => $request->full_name,
+            'user_name' => $request->user_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'role' => $request->role ?? 'customer',
         ]);
 
-        $token = Auth::guard('api')->login($user);
+        $token = $this->initJwtAuthGuard()->login($user);
         return $this->respondWithToken($token, $user);
     }
 
@@ -43,16 +44,16 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         // تم التحقق من البيانات تلقائياً بواسطة Form Request
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('user_name', 'password');
 
-        if (!$token = Auth::guard('api')->attempt($credentials)) {
+        if (!$token = $this->initJwtAuthGuard()->attempt($credentials)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'بيانات الاعتماد غير صالحة'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $user = Auth::guard('api')->user();
+        $user = $this->initJwtAuthGuard()->user();
         return $this->respondWithToken($token, $user);
     }
 
@@ -63,7 +64,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        Auth::guard('api')->logout();
+        $this->initJwtAuthGuard()->logout();
         return response()->json([
             'status' => 'success',
             'message' => 'تم تسجيل الخروج بنجاح'
@@ -77,8 +78,8 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        $user = Auth::guard('api')->user();
-        $token = Auth::guard('api')->refresh();
+        $user = $this->initJwtAuthGuard()->user();
+        $token = $this->initJwtAuthGuard()->refresh();
 
         return $this->respondWithToken($token, $user);
     }
@@ -90,12 +91,21 @@ class AuthController extends Controller
      */
     public function me()
     {
-        $user = Auth::guard('api')->user();
+        $user = $this->initJwtAuthGuard()->user();
 
         return response()->json([
             'status' => 'success',
             'data' => new UserResource($user)
         ]);
+    }
+
+    protected function initJwtAuthGuard()  :JWTGuard
+    {
+        /**
+         * @var JwtGuard $guard
+         */
+        $guard = Auth::guard('api');
+        return $guard;
     }
 
     /**
@@ -111,7 +121,7 @@ class AuthController extends Controller
             'status' => 'success',
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+            'expires_in' => $this->initJwtAuthGuard()->factory()->getTTL() * 60,
             'user' => new UserResource($user)
         ]);
     }

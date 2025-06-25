@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
     public function rules()
     {
         return [
-            'username' => 'required|string',
+            'user_name' => 'required|string',
             'password' => 'required|string',
         ];
     }
@@ -37,8 +37,8 @@ class LoginRequest extends FormRequest
     public function messages()
     {
         return [
-            'username.required' => 'حقل اسم المستخدم مطلوب',
-            'username.string' => 'يجب أن يكون اسم المستخدم نصًا',
+            'user_name.required' => 'حقل اسم المستخدم مطلوب',
+            'user_name.string' => 'يجب أن يكون اسم المستخدم نصًا',
             'password.required' => 'حقل كلمة المرور مطلوب',
             'password.string' => 'يجب أن تكون كلمة المرور نصًا',
         ];

@@ -27,7 +27,7 @@ class UpdateUserRequest extends FormRequest
         
         return [
             'fullname' => 'sometimes|string|max:50',
-            'username' => 'sometimes|string|max:50|unique:users,username,' . $user->user_id . ',user_id',
+            'username' => 'sometimes|string|max:50|unique:users,user_name,' . $user->user_id . ',user_id',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->user_id . ',user_id',
             'password' => 'sometimes|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',

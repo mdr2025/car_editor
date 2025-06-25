@@ -39,8 +39,8 @@ class UserController extends Controller
     {
         // تم التحقق من البيانات تلقائياً بواسطة Form Request
         $user = User::create([
-            'fullname' => $request->fullname,
-            'username' => $request->username,
+            'full_name' => $request->fullname,
+            'user_name' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
